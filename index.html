@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sunclass Cargo Reconciler - Full Deck Profile</title>
+    <title>Sunclass Cargo Reconciler - Fixed Layout</title>
     <style>
         :root {
             --bg-color: #121212;
@@ -148,7 +148,6 @@
         </div>
     </div>
 
-    <!-- HOLD 1 -->
     <div class="form-group">
         <div class="hold-title">
             <span>HOLD 1 (Forward Containers / AKE)</span>
@@ -199,7 +198,6 @@
         </div>
     </div>
 
-    <!-- HOLD 2 -->
     <div class="form-group">
         <div class="hold-title">
             <span>HOLD 2 (Forward Pallets / PMC Gross)</span>
@@ -216,7 +214,6 @@
         </div>
     </div>
 
-    <!-- HOLD 3 -->
     <div class="form-group">
         <div class="hold-title">
             <span>HOLD 3 (Aft Containers / AKE)</span>
@@ -273,7 +270,6 @@
         </div>
     </div>
 
-    <!-- HOLD 4 -->
     <div class="form-group">
         <div class="hold-title">
             <span>HOLD 4 (Aft Containers / AKE)</span>
@@ -311,7 +307,6 @@
         </div>
     </div>
 
-    <!-- HOLD 5 -->
     <div class="form-group">
         <div class="hold-title">
             <span>HOLD 5 (Loose Bulk)</span>
@@ -420,7 +415,6 @@
         let cateringActiveIDs = [];
 
         positions.forEach(id => {
-            const prefix = id.split('-')[0];
             const suffix = id.split('-')[1];
             const chk = document.getElementById('chk-' + suffix);
             if (chk && chk.checked) {
@@ -463,25 +457,4 @@
         const h2Total = getVal('h2-23p') + getVal('h2-24p');
         updateStatus('status-h2', h2Total, getVal('target-h2'));
 
-        // --- HOLD 3 ---
-        let h3Positions = ['h3-33l', 'h3-33r', 'h3-34l', 'h3-34r'];
-        if (currentAircraft === 'A333') h3Positions.push('h3-31l', 'h3-31r');
-        
-        const targetH3 = currentAircraft === 'A333' ? getVal('target-h3') : getVal('target-h3-alt');
-        const h3Total = computeFlexibleHold(h3Positions, targetH3);
-        updateStatus('status-h3', h3Total, targetH3);
-
-        // --- HOLD 4 ---
-        const h4Positions = ['h4-41l', 'h4-41r', 'h4-42l', 'h4-43r'];
-        const h4Total = computeFlexibleHold(h4Positions, getVal('target-h4'));
-        updateStatus('status-h4', h4Total, getVal('target-h4'));
-
-        // --- HOLD 5 ---
-        const h5Total = getVal('h5-bags') * 13;
-        updateStatus('status-h5', h5Total, getVal('target-h5'));
-    }
-
-    calculate();
-</script>
-</body>
-</html>
+        // ---
