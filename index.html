@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI-Powered Multi-Side Loadplan Reconciler</title>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <title>Sunclass Cargo Reconciler - Unrestricted Configuration</title>
     <style>
         :root {
             --bg-color: #121212;
@@ -13,6 +12,8 @@
             --text: #eeeeee;
             --success: #4caf50;
             --error: #f44336;
+            --toggle-bg: #2d2d2d;
+            --catering-color: #ff9800;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -22,352 +23,348 @@
             padding: 20px;
         }
         .container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            max-width: 1400px;
+            max-width: 950px;
             margin: 0 auto;
         }
-        @media (max-width: 1024px) {
-            .container { grid-template-columns: 1fr; }
-        }
-        .panel {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-        .image-split-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        @media (max-width: 600px) {
-            .image-split-container { grid-template-columns: 1fr; }
-        }
-        .upload-box {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .upload-zone {
-            border: 2px dashed #444;
-            padding: 40px 10px;
+        .header {
             text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+        }
+        .header h1 {
+            margin: 0 0 15px 0;
+            color: var(--accent);
+            font-size: 26px;
+        }
+        .aircraft-selector {
+            display: inline-flex;
+            background: var(--toggle-bg);
+            padding: 5px;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+        .type-btn {
+            background: transparent;
+            color: #aaa;
+            border: none;
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: bold;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 14px;
-            background: #171717;
             transition: all 0.2s ease;
         }
-        .upload-zone:hover { 
-            border-color: var(--accent); 
-            background: #222;
-        }
-        .preview-img {
-            width: 100%;
-            max-height: 40vh;
-            object-fit: contain;
-            border-radius: 4px;
-            display: none;
-            border: 1px solid #333;
-            margin-top: 5px;
-        }
-        .ocr-box {
-            margin-top: 15px;
-            background: #151515;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #333;
-        }
-        .ocr-output {
-            width: 100%;
-            height: 120px;
-            background: #222;
-            color: #85ff85;
-            border: 1px solid #444;
-            padding: 8px;
-            font-family: monospace;
-            font-size: 12px;
-            border-radius: 4px;
-            resize: vertical;
-            box-sizing: border-box;
-        }
-        .progress-bar {
-            height: 4px;
-            width: 0%;
+        .type-btn.active {
             background: var(--accent);
-            margin-top: 5px;
-            border-radius: 2px;
-            transition: width 0.2s ease;
+            color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
         }
-        h2 { margin-top: 0; color: var(--accent); border-bottom: 1px solid #333; padding-bottom: 8px;}
-        h3 { margin: 0 0 5px 0; font-size: 14px; color: #ccc; }
-        .form-group {
-            margin-bottom: 15px;
-            background: #252525;
+        .info-box {
+            background: #1a2a3a;
+            border-left: 4px solid var(--accent);
             padding: 12px;
-            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            border-radius: 0 4px 4px 0;
+            line-height: 1.4;
         }
-        .hold-title { font-weight: bold; margin-bottom: 8px; color: var(--accent); display: flex; justify-content: space-between;}
-        .grid-row {
+        .form-group {
+            margin-bottom: 20px;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .hold-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .grid-layout {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 5px;
+            grid-template-columns: 1.2fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 12px;
+            align-items: end;
         }
-        label { font-size: 12px; color: #aaa; display: block; margin-bottom: 2px; }
-        input {
+        .input-wrapper {
+            background: #171717;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        .input-wrapper.catering-active {
+            border-color: var(--catering-color);
+            background: #2a1b0c;
+        }
+        label { 
+            font-size: 12px; 
+            color: #aaa; 
+            display: block; 
+            margin-bottom: 4px; 
+            font-weight: bold;
+        }
+        .input-wrapper.catering-active label { color: var(--catering-color); }
+        input[type="number"], input[type="text"] {
             width: 100%;
-            background: #333;
+            background: #2b2b2b;
             border: 1px solid #444;
             color: #fff;
             padding: 6px;
             border-radius: 4px;
             box-sizing: border-box;
+            font-size: 14px;
         }
         input:focus { border-color: var(--accent); outline: none; }
+        .cat-toggle {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 6px;
+            font-size: 11px;
+            color: #888;
+            cursor: pointer;
+            user-select: none;
+        }
+        .cat-toggle input { width: auto; margin: 0; cursor: pointer; }
+        .input-wrapper.catering-active .cat-toggle { color: var(--catering-color); }
         .status-badge {
-            padding: 2px 8px;
+            padding: 4px 10px;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: bold;
         }
         .match { background: var(--success); color: white; }
         .mismatch { background: var(--error); color: white; }
-        .info-box {
-            background: #1a2a3a;
-            border-left: 4px solid var(--accent);
-            padding: 10px;
-            margin-bottom: 15px;
-            font-size: 13px;
-            border-radius: 0 4px 4px 0;
-        }
+        .layout-note { font-size: 11px; color: #666; margin-top: -8px; margin-bottom: 10px; font-style: italic; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="panel">
-        <h2>1. Loadplan AI Reference Scanner</h2>
-        <div class="image-split-container">
-            
-            <div class="upload-box">
-                <h3>Side A (ULD Numbers)</h3>
-                <div class="upload-zone" id="dropzoneA">
-                    <p style="margin: 0; pointer-events: none;">📸 Drop or Click to AI Scan</p>
-                    <input type="file" id="fileInputA" accept="image/*" style="display:none">
-                </div>
-                <div id="progressA" class="progress-bar"></div>
-                <img id="previewA" class="preview-img" alt="Side A Preview">
-                <div class="ocr-box">
-                    <label>Side A Extracted Text Data:</label>
-                    <textarea id="ocrOutputA" class="ocr-output" placeholder="AI text results will output here..."></textarea>
-                </div>
-            </div>
-
-            <div class="upload-box">
-                <h3>Side B (Bag Counts / Grid)</h3>
-                <div class="upload-zone" id="dropzoneB">
-                    <p style="margin: 0; pointer-events: none;">📸 Drop or Click to AI Scan</p>
-                    <input type="file" id="fileInputB" accept="image/*" style="display:none">
-                </div>
-                <div id="progressB" class="progress-bar"></div>
-                <img id="previewB" class="preview-img" alt="Side B Preview">
-                <div class="ocr-box">
-                    <label>Side B Extracted Text Data:</label>
-                    <textarea id="ocrOutputB" class="ocr-output" placeholder="AI text results will output here..."></textarea>
-                </div>
-            </div>
-
+    <div class="header">
+        <h1>Sunclass Cargo Reconciler</h1>
+        <div class="aircraft-selector">
+            <button class="type-btn active" id="btn-A390" onclick="switchAircraft('A390')">A330-900 (A390)</button>
+            <button class="type-btn" id="btn-A333" onclick="switchAircraft('A333')">A330-300 (A333)</button>
         </div>
     </div>
 
-    <div class="panel">
-        <h2>2. Data Entry & Automated Checker</h2>
-        <div class="info-box">
-            <strong>Rules Applied:</strong> Bags = 13 kg | AKE empty weight = +65 kg | PMC = Total gross weight directly from sheet | Catering = Calculated automatically from remainder.
+    <div class="info-box">
+        <strong>Unrestricted Configuration Mode:</strong> Toggle the <strong>"Catering?"</strong> checkbox under <em>any</em> unit position to set it as a catering block. You can select multiple catering units in a single hold, or turn an entire hold completely into catering to match specialized manifest layouts!
+    </div>
+
+    <!-- HOLD 2 -->
+    <div class="form-group">
+        <div class="hold-title">
+            <span>HOLD 2 (Pallets / PMC Gross)</span>
+            <span id="status-h2" class="status-badge mismatch">Empty</span>
         </div>
+        <div class="layout-note">Sections 21-26</div>
+        <div class="grid-layout">
+            <div class="input-wrapper" style="background: #111;">
+                <label>Target Loadsheet WT</label>
+                <input type="number" id="target-h2" placeholder="0" oninput="calculate()">
+            </div>
+            <div class="input-wrapper"><label>Pos 23P WT (Gross)</label><input type="number" id="h2-23p" placeholder="0" oninput="calculate()"></div>
+            <div class="input-wrapper"><label>Pos 24P WT (Gross)</label><input type="number" id="h2-24p" placeholder="0" oninput="calculate()"></div>
+        </div>
+    </div>
+
+    <!-- HOLD 3 -->
+    <div class="form-group">
+        <div class="hold-title">
+            <span>HOLD 3 (Containers / AKE)</span>
+            <span id="status-h3" class="status-badge mismatch">Empty</span>
+        </div>
+        <div class="layout-note" id="h3-layout-text">Sections 32-34 (A390 Standard)</div>
         
-        <div class="form-group">
-            <div class="hold-title">
-                <span>HOLD 2 (Pallets / PMC Gross)</span>
-                <span id="status-h2" class="status-badge mismatch">Empty</span>
+        <div class="grid-layout" id="row-31" style="display: none;">
+            <div class="input-wrapper" style="background: #111;">
+                <label>Target Loadsheet WT</label>
+                <input type="number" id="target-h3" placeholder="0" oninput="calculate()">
             </div>
-            <div class="grid-row">
-                <div>
-                    <label>Target Loadsheet WT</label>
-                    <input type="number" id="target-h2" placeholder="0" oninput="calculate()">
-                </div>
-                <div>
-                    <label>Pos 23P WT</label>
-                    <input type="number" id="h2-23p" placeholder="0" oninput="calculate()">
-                </div>
-                <div>
-                    <label>Pos 24P WT</label>
-                    <input type="number" id="h2-24p" placeholder="0" oninput="calculate()">
-                </div>
+            <div class="input-wrapper" id="wrap-31l">
+                <label id="lbl-31l">31L Bags</label>
+                <input type="number" id="h3-31l" placeholder="0" oninput="calculate()">
+                <label class="cat-toggle"><input type="checkbox" id="chk-31l" onchange="toggleCatering('h3-31l','chk-31l','lbl-31l')"> Catering?</label>
+            </div>
+            <div class="input-wrapper" id="wrap-31r">
+                <label id="lbl-31r">31R Bags</label>
+                <input type="number" id="h3-31r" placeholder="0" oninput="calculate()">
+                <label class="cat-toggle"><input type="checkbox" id="chk-31r" onchange="toggleCatering('h3-31r','chk-31r','lbl-31r')"> Catering?</label>
             </div>
         </div>
 
-        <div class="form-group">
-            <div class="hold-title">
-                <span>HOLD 3 (Containers / AKE)</span>
-                <span id="status-h3" class="status-badge mismatch">Empty</span>
+        <div class="grid-layout" id="row-33-container">
+            <!-- This target block displays if Section 31 is hidden (A390 setup) -->
+            <div class="input-wrapper" id="h3-main-target-box" style="background: #111;">
+                <label>Target Loadsheet WT</label>
+                <input type="number" id="target-h3-alt" placeholder="0" oninput="syncTargets('target-h3-alt','target-h3')">
             </div>
-            <div class="grid-row">
-                <div><label>Target Loadsheet WT</label><input type="number" id="target-h3" placeholder="0" oninput="calculate()"></div>
-                <div><label>33L Bags</label><input type="number" id="h3-33l" placeholder="0" oninput="calculate()"></div>
-                <div><label>33R Bags</label><input type="number" id="h3-33r" placeholder="0" oninput="calculate()"></div>
+            <div class="input-wrapper" id="wrap-33l">
+                <label id="lbl-33l">33L Bags</label>
+                <input type="number" id="h3-33l" placeholder="0" oninput="calculate()">
+                <label class="cat-toggle"><input type="checkbox" id="chk-33l" onchange="toggleCatering('h3-33l','chk-33l','lbl-33l')"> Catering?</label>
             </div>
-            <div class="grid-row" style="margin-top: 5px;">
-                <div></div>
-                <div><label>34L Bags</label><input type="number" id="h3-34l" placeholder="0" oninput="calculate()"></div>
-                <div><label>34R Bags</label><input type="number" id="h3-34r" placeholder="0" oninput="calculate()"></div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="hold-title">
-                <span>HOLD 4 (Containers + Auto Catering)</span>
-                <span id="status-h4" class="status-badge mismatch">Empty</span>
-            </div>
-            <div class="grid-row">
-                <div><label>Target Loadsheet WT</label><input type="number" id="target-h4" placeholder="0" oninput="calculate()"></div>
-                <div><label>41L Bags</label><input type="number" id="h4-41l" placeholder="0" oninput="calculate()"></div>
-                <div><label>41R Bags</label><input type="number" id="h4-41r" placeholder="0" oninput="calculate()"></div>
-            </div>
-            <div class="grid-row" style="margin-top: 5px;">
-                <div>
-                    <label>Auto-Calculated Catering</label>
-                    <input type="text" id="h4-cat" style="background:#153520; color:#85ff85; font-weight:bold;" readonly>
-                </div>
-                <div><label>42L Bags</label><input type="number" id="h4-42l" placeholder="0" oninput="calculate()"></div>
-                <div></div>
+            <div class="input-wrapper" id="wrap-33r">
+                <label id="lbl-33r">33R Bags</label>
+                <input type="number" id="h3-33r" placeholder="0" oninput="calculate()">
+                <label class="cat-toggle"><input type="checkbox" id="chk-33r" onchange="toggleCatering('h3-33r','chk-33r','lbl-33r')"> Catering?</label>
             </div>
         </div>
 
-        <div class="form-group">
-            <div class="hold-title">
-                <span>HOLD 5 (Loose Bulk)</span>
-                <span id="status-h5" class="status-badge mismatch">Empty</span>
+        <div class="grid-layout">
+            <div></div>
+            <div class="input-wrapper" id="wrap-34l">
+                <label id="lbl-34l">34L Bags</label>
+                <input type="number" id="h3-34l" placeholder="0" oninput="calculate()">
+                <label class="cat-toggle"><input type="checkbox" id="chk-34l" onchange="toggleCatering('h3-34l','chk-34l','lbl-34l')"> Catering?</label>
             </div>
-            <div class="grid-row">
-                <div>
-                    <label>Target Loadsheet WT</label>
-                    <input type="number" id="target-h5" placeholder="0" oninput="calculate()">
-                </div>
-                <div>
-                    <label>Bulk Bags (No Tare)</label>
-                    <input type="number" id="h5-bags" placeholder="0" oninput="calculate()">
-                </div>
-                <div></div>
+            <div class="input-wrapper" id="wrap-34r">
+                <label id="lbl-34r">34R Bags</label>
+                <input type="number" id="h3-34r" placeholder="0" oninput="calculate()">
+                <label class="cat-toggle"><input type="checkbox" id="chk-34r" onchange="toggleCatering('h3-34r','chk-34r','lbl-34r')"> Catering?</label>
             </div>
         </div>
+    </div>
 
+    <!-- HOLD 4 -->
+    <div class="form-group">
+        <div class="hold-title">
+            <span>HOLD 4 (Containers / AKE)</span>
+            <span id="status-h4" class="status-badge mismatch">Empty</span>
+        </div>
+        <div class="layout-note">Sections 41-43</div>
+        <div class="grid-layout">
+            <div class="input-wrapper" style="background: #111;">
+                <label>Target Loadsheet WT</label>
+                <input type="number" id="target-h4" placeholder="0" oninput="calculate()">
+            </div>
+            <div class="input-wrapper" id="wrap-41l">
+                <label id="lbl-41l">41L Bags</label>
+                <input type="number" id="h4-41l" placeholder="0" oninput="calculate()">
+                <label class="cat-toggle"><input type="checkbox" id="chk-41l" onchange="toggleCatering('h4-41l','chk-41l','lbl-41l')"> Catering?</label>
+            </div>
+            <div class="input-wrapper" id="wrap-41r">
+                <label id="lbl-41r">41R Bags</label>
+                <input type="number" id="h4-41r" placeholder="0" oninput="calculate()">
+                <label class="cat-toggle"><input type="checkbox" id="chk-41r" onchange="toggleCatering('h4-41r','chk-41r','lbl-41r')"> Catering?</label>
+            </div>
+        </div>
+        <div class="grid-layout">
+            <div></div>
+            <div class="input-wrapper" id="wrap-42l">
+                <label id="lbl-42l">42L Bags</label>
+                <input type="number" id="h4-42l" placeholder="0" oninput="calculate()">
+                <label class="cat-toggle"><input type="checkbox" id="chk-42l" onchange="toggleCatering('h4-42l','chk-42l','lbl-42l')"> Catering?</label>
+            </div>
+            <div class="input-wrapper" id="wrap-43r">
+                <label id="lbl-43r">43R Bags</label>
+                <input type="number" id="h4-43r" placeholder="0" oninput="calculate()">
+                <label class="cat-toggle"><input type="checkbox" id="chk-43r" onchange="toggleCatering('h4-43r','chk-43r','lbl-43r')"> Catering?</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- HOLD 5 -->
+    <div class="form-group">
+        <div class="hold-title">
+            <span>HOLD 5 (Loose Bulk)</span>
+            <span id="status-h5" class="status-badge mismatch">Empty</span>
+        </div>
+        <div class="layout-note">Bulk Compartment (No metal container weights processed)</div>
+        <div class="grid-layout">
+            <div class="input-wrapper" style="background: #111;">
+                <label>Target Loadsheet WT</label>
+                <input type="number" id="target-h5" placeholder="0" oninput="calculate()">
+            </div>
+            <div class="input-wrapper"><label>Bulk Bags Count</label><input type="number" id="h5-bags" placeholder="0" oninput="calculate()"></div>
+            <div></div>
+        </div>
     </div>
 </div>
 
 <script>
-    // Configures document visual layouts and activates the background AI OCR reading sequence
-    function setupUploader(dropzoneId, inputId, previewId, ocrOutputId, progressBarId) {
-        const dropzone = document.getElementById(dropzoneId);
-        const fileInput = document.getElementById(inputId);
-        const preview = document.getElementById(previewId);
-        const ocrOutput = document.getElementById(ocrOutputId);
-        const progressBar = document.getElementById(progressBarId);
+    let currentAircraft = 'A390';
 
-        if (!dropzone || !fileInput || !preview) return;
+    function switchAircraft(type) {
+        currentAircraft = type;
+        document.getElementById('btn-A390').classList.toggle('active', type === 'A390');
+        document.getElementById('btn-A333').classList.toggle('active', type === 'A333');
+        
+        const layoutText = document.getElementById('h3-layout-text');
+        const row31 = document.getElementById('row-31');
+        const mainTargetBox = document.getElementById('h3-main-target-box');
 
-        dropzone.addEventListener('click', function() {
-            fileInput.click();
-        });
-        
-        dropzone.addEventListener('dragover', function(e) { 
-            e.preventDefault(); 
-            dropzone.style.borderColor = 'var(--accent)'; 
-        });
-        
-        dropzone.addEventListener('dragleave', function() { 
-            dropzone.style.borderColor = '#444'; 
-        });
-        
-        dropzone.addEventListener('drop', function(e) {
-            e.preventDefault();
-            dropzone.style.borderColor = '#444';
-            if(e.dataTransfer.files && e.dataTransfer.files.length) { 
-                handleFileAndScan(e.dataTransfer.files[0], preview, dropzone, ocrOutput, progressBar); 
-            }
-        });
-        
-        fileInput.addEventListener('change', function(e) {
-            if(e.target.files && e.target.files.length) { 
-                handleFileAndScan(e.target.files[0], preview, dropzone, ocrOutput, progressBar); 
-            }
-        });
-    }
-
-    function handleFileAndScan(file, previewElement, dropzoneElement, outputField, progressElement) {
-        if (!file || !file.type.match('image.*')) return;
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const imgDataUrl = e.target.result;
-            previewElement.src = imgDataUrl;
-            previewElement.style.display = 'block';
-            dropzoneElement.style.display = 'none';
-            
-            // Fire Tesseract Engine Recognition Task
-            runOcrScan(imgDataUrl, outputField, progressElement);
+        if (type === 'A333') {
+            layoutText.textContent = "Sections 31-34 (Section 31 Active)";
+            row31.style.display = 'grid';
+            mainTargetBox.style.display = 'none';
+        } else {
+            layoutText.textContent = "Sections 32-34 (A390 Standard)";
+            row31.style.display = 'none';
+            mainTargetBox.style.display = 'block';
+            resetField('h3-31l','chk-31l','lbl-31l');
+            resetField('h3-31r','chk-31r','lbl-31r');
         }
-        reader.readAsDataURL(file);
+        calculate();
     }
 
-    function runOcrScan(imageSrc, textOutputField, barElement) {
-        textOutputField.value = "[AI Engine booting up... please wait...]";
-        barElement.style.width = "20%";
-
-        Tesseract.recognize(
-            imageSrc,
-            'eng', // scanning dictionary standard language parameters
-            { 
-                logger: m => {
-                    if(m.status === 'recognizing') {
-                        // Dynamically update progress bar calculation percentage
-                        barElement.style.width = Math.floor(m.progress * 100) + "%";
-                    }
-                } 
-            }
-        ).then(({ data: { text } }) => {
-            barElement.style.width = "100%";
-            if(text.trim() === "") {
-                textOutputField.value = "[Scan complete. No clear digital text detected.]";
-            } else {
-                textOutputField.value = text;
-            }
-            setTimeout(() => { barElement.style.width = "0%"; }, 2000);
-        }).catch(err => {
-            console.error(err);
-            textOutputField.value = "[AI Reading Failure: Could not process layout data cleanly.]";
-            barElement.style.width = "0%";
-        });
+    function syncTargets(srcId, destId) {
+        document.getElementById(destId).value = document.getElementById(srcId).value;
+        calculate();
     }
 
-    // Initialize drop zones safely
-    setupUploader('dropzoneA', 'fileInputA', 'previewA', 'ocrOutputA', 'progressA');
-    setupUploader('dropzoneB', 'fileInputB', 'previewB', 'ocrOutputB', 'progressB');
+    function toggleCatering(inputId, checkId, labelId) {
+        const inputEl = document.getElementById(inputId);
+        const checkEl = document.getElementById(checkId);
+        const labelEl = document.getElementById(labelId);
+        const wrapper = inputEl.parentElement;
+        const posCode = inputId.split('-')[1].toUpperCase();
 
-    // Basic arithmetic handling for safe evaluation checks
-    function getVal(id) { 
-        const val = document.getElementById(id).value;
-        if (val === "" || isNaN(val)) return 0;
-        return parseFloat(val); 
+        if (checkEl.checked) {
+            wrapper.classList.add('catering-active');
+            labelEl.textContent = posCode + " Catering WT";
+            inputEl.type = "text";
+            inputEl.readOnly = true;
+            inputEl.style.background = "#153520";
+            inputEl.style.color = "#85ff85";
+            inputEl.style.fontWeight = "bold";
+        } else {
+            wrapper.classList.remove('catering-active');
+            labelEl.textContent = posCode + " Bags";
+            inputEl.type = "number";
+            inputEl.readOnly = false;
+            inputEl.value = "";
+            inputEl.style.background = "#2b2b2b";
+            inputEl.style.color = "#fff";
+            inputEl.style.fontWeight = "normal";
+        }
+        calculate();
+    }
+
+    function resetField(inputId, checkId, labelId) {
+        document.getElementById(checkId).checked = false;
+        toggleCatering(inputId, checkId, labelId);
+    }
+
+    function getVal(id) {
+        const el = document.getElementById(id);
+        if (!el || el.value === "" || isNaN(el.value)) return 0;
+        return parseFloat(el.value);
     }
     
     function updateStatus(badgeId, calculated, target) {
         const badge = document.getElementById(badgeId);
         if (!badge) return;
-        
         const diff = calculated - target;
         if (target === 0 && calculated === 0) {
             badge.textContent = "Empty";
@@ -381,55 +378,64 @@
         }
     }
 
+    function computeFlexibleHold(positions, targetValue) {
+        let baggageWeightSum = 0;
+        let cateringActiveIDs = [];
+
+        // Distinguish standard baggage from catering elements
+        positions.forEach(id => {
+            const suffix = id.split('-')[1];
+            const chk = document.getElementById('chk-' + suffix);
+            if (chk && chk.checked) {
+                cateringActiveIDs.push(id);
+            } else {
+                const val = document.getElementById(id).value;
+                if (val !== "" && !isNaN(val) && parseFloat(val) > 0) {
+                    baggageWeightSum += (parseFloat(val) * 13) + 65;
+                }
+            }
+        });
+
+        let totalHoldCateringWeight = 0;
+        if (cateringActiveIDs.length > 0) {
+            if (targetValue > 0) {
+                totalHoldCateringWeight = targetValue - baggageWeightSum;
+                if (totalHoldCateringWeight < 0) totalHoldCateringWeight = 0;
+                
+                // Divide leftover payload allocation equally across designated units
+                const splitWeight = Math.floor(totalHoldCateringWeight / cateringActiveIDs.length);
+                cateringActiveIDs.forEach(id => {
+                    document.getElementById(id).value = splitWeight + " kg";
+                });
+            } else {
+                cateringActiveIDs.forEach(id => {
+                    document.getElementById(id).value = "0 kg";
+                });
+            }
+        }
+
+        return baggageWeightSum + totalHoldCateringWeight;
+    }
+
     function calculate() {
-        // HOLD 2: PMC Direct Weight Validation
+        // --- HOLD 2 ---
         const h2Total = getVal('h2-23p') + getVal('h2-24p');
         updateStatus('status-h2', h2Total, getVal('target-h2'));
 
-        // HOLD 3: Standard Container Calc Engine (Bags * 13 + 65)
-        const h3Positions = ['h3-33l', 'h3-33r', 'h3-34l', 'h3-34r'];
-        let h3Total = 0;
-        h3Positions.forEach(id => {
-            const inputElement = document.getElementById(id);
-            if (inputElement && inputElement.value !== "") {
-                const bags = parseFloat(inputElement.value);
-                if (!isNaN(bags) && bags > 0) {
-                    h3Total += (bags * 13) + 65;
-                }
-            }
-        });
-        updateStatus('status-h3', h3Total, getVal('target-h3'));
+        // --- HOLD 3 ---
+        let h3Positions = ['h3-33l', 'h3-33r', 'h3-34l', 'h3-34r'];
+        if (currentAircraft === 'A333') h3Positions.push('h3-31l', 'h3-31r');
+        
+        const targetH3 = currentAircraft === 'A333' ? getVal('target-h3') : getVal('target-h3-alt');
+        const h3Total = computeFlexibleHold(h3Positions, targetH3);
+        updateStatus('status-h3', h3Total, targetH3);
 
-        // HOLD 4: Standard Container Engine + Dynamic Catering Delta Deductions
-        const h4Positions = ['h4-41l', 'h4-41r', 'h4-42l'];
-        let h4BagsWeightTotal = 0;
-        
-        h4Positions.forEach(id => {
-            const inputElement = document.getElementById(id);
-            if (inputElement && inputElement.value !== "") {
-                const bags = parseFloat(inputElement.value);
-                if (!isNaN(bags) && bags > 0) {
-                    h4BagsWeightTotal += (bags * 13) + 65;
-                }
-            }
-        });
-        
-        const targetH4 = getVal('target-h4');
-        let calculatedCatering = 0;
-        
-        if (targetH4 > 0) {
-            calculatedCatering = targetH4 - h4BagsWeightTotal;
-        }
-        
-        const catField = document.getElementById('h4-cat');
-        if (catField) {
-            catField.value = calculatedCatering > 0 ? calculatedCatering + " kg" : "0 kg";
-        }
-        
-        const h4FinalCalc = h4BagsWeightTotal + (calculatedCatering > 0 ? calculatedCatering : 0);
-        updateStatus('status-h4', h4FinalCalc, targetH4);
+        // --- HOLD 4 ---
+        const h4Positions = ['h4-41l', 'h4-41r', 'h4-42l', 'h4-43r'];
+        const h4Total = computeFlexibleHold(h4Positions, getVal('target-h4'));
+        updateStatus('status-h4', h4Total, getVal('target-h4'));
 
-        // HOLD 5: Loose Bulk Evaluation Engine
+        // --- HOLD 5 ---
         const h5Total = getVal('h5-bags') * 13;
         updateStatus('status-h5', h5Total, getVal('target-h5'));
     }
