@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sunclass Cargo Reconciler - Unrestricted Configuration</title>
+    <title>Sunclass Cargo Reconciler - Full Deck Profile</title>
     <style>
         :root {
             --bg-color: #121212;
@@ -59,15 +59,6 @@
             background: var(--accent);
             color: #fff;
             box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-        }
-        .info-box {
-            background: #1a2a3a;
-            border-left: 4px solid var(--accent);
-            padding: 12px;
-            margin-bottom: 20px;
-            font-size: 13px;
-            border-radius: 0 4px 4px 0;
-            line-height: 1.4;
         }
         .form-group {
             margin-bottom: 20px;
@@ -157,14 +148,61 @@
         </div>
     </div>
 
-    <div class="info-box">
-        <strong>Unrestricted Configuration Mode:</strong> Toggle the <strong>"Catering?"</strong> checkbox under <em>any</em> unit position to set it as a catering block. You can select multiple catering units in a single hold, or turn an entire hold completely into catering to match specialized manifest layouts!
+    <!-- HOLD 1 -->
+    <div class="form-group">
+        <div class="hold-title">
+            <span>HOLD 1 (Forward Containers / AKE)</span>
+            <span id="status-h1" class="status-badge mismatch">Empty</span>
+        </div>
+        <div class="layout-note">Sections 11-13</div>
+        <div class="grid-layout">
+            <div class="input-wrapper" style="background: #111;">
+                <label>Target Loadsheet WT</label>
+                <input type="number" id="target-h1" placeholder="0" oninput="calculate()">
+            </div>
+            <div class="input-wrapper" id="wrap-11l">
+                <label id="lbl-11l">11L Bags</label>
+                <input type="number" id="h1-11l" placeholder="0" oninput="calculate()">
+                <label class="cat-toggle"><input type="checkbox" id="chk-11l" onchange="toggleCatering('h1-11l','chk-11l','lbl-11l')"> Catering?</label>
+            </div>
+            <div class="input-wrapper" id="wrap-11r">
+                <label id="lbl-11r">11R Bags</label>
+                <input type="number" id="h1-11r" placeholder="0" oninput="calculate()">
+                <label class="cat-toggle"><input type="checkbox" id="chk-11r" onchange="toggleCatering('h1-11r','chk-11r','lbl-11r')"> Catering?</label>
+            </div>
+        </div>
+        <div class="grid-layout">
+            <div></div>
+            <div class="input-wrapper" id="wrap-12l">
+                <label id="lbl-12l">12L Bags</label>
+                <input type="number" id="h1-12l" placeholder="0" oninput="calculate()">
+                <label class="cat-toggle"><input type="checkbox" id="chk-12l" onchange="toggleCatering('h1-12l','chk-12l','lbl-12l')"> Catering?</label>
+            </div>
+            <div class="input-wrapper" id="wrap-12r">
+                <label id="lbl-12r">12R Bags</label>
+                <input type="number" id="h1-12r" placeholder="0" oninput="calculate()">
+                <label class="cat-toggle"><input type="checkbox" id="chk-12r" onchange="toggleCatering('h1-12r','chk-12r','lbl-12r')"> Catering?</label>
+            </div>
+        </div>
+        <div class="grid-layout">
+            <div></div>
+            <div class="input-wrapper" id="wrap-13l">
+                <label id="lbl-13l">13L Bags</label>
+                <input type="number" id="h1-13l" placeholder="0" oninput="calculate()">
+                <label class="cat-toggle"><input type="checkbox" id="chk-13l" onchange="toggleCatering('h1-13l','chk-13l','lbl-13l')"> Catering?</label>
+            </div>
+            <div class="input-wrapper" id="wrap-13r">
+                <label id="lbl-13r">13R Bags</label>
+                <input type="number" id="h1-13r" placeholder="0" oninput="calculate()">
+                <label class="cat-toggle"><input type="checkbox" id="chk-13r" onchange="toggleCatering('h1-13r','chk-13r','lbl-13r')"> Catering?</label>
+            </div>
+        </div>
     </div>
 
     <!-- HOLD 2 -->
     <div class="form-group">
         <div class="hold-title">
-            <span>HOLD 2 (Pallets / PMC Gross)</span>
+            <span>HOLD 2 (Forward Pallets / PMC Gross)</span>
             <span id="status-h2" class="status-badge mismatch">Empty</span>
         </div>
         <div class="layout-note">Sections 21-26</div>
@@ -181,7 +219,7 @@
     <!-- HOLD 3 -->
     <div class="form-group">
         <div class="hold-title">
-            <span>HOLD 3 (Containers / AKE)</span>
+            <span>HOLD 3 (Aft Containers / AKE)</span>
             <span id="status-h3" class="status-badge mismatch">Empty</span>
         </div>
         <div class="layout-note" id="h3-layout-text">Sections 32-34 (A390 Standard)</div>
@@ -204,7 +242,6 @@
         </div>
 
         <div class="grid-layout" id="row-33-container">
-            <!-- This target block displays if Section 31 is hidden (A390 setup) -->
             <div class="input-wrapper" id="h3-main-target-box" style="background: #111;">
                 <label>Target Loadsheet WT</label>
                 <input type="number" id="target-h3-alt" placeholder="0" oninput="syncTargets('target-h3-alt','target-h3')">
@@ -239,7 +276,7 @@
     <!-- HOLD 4 -->
     <div class="form-group">
         <div class="hold-title">
-            <span>HOLD 4 (Containers / AKE)</span>
+            <span>HOLD 4 (Aft Containers / AKE)</span>
             <span id="status-h4" class="status-badge mismatch">Empty</span>
         </div>
         <div class="layout-note">Sections 41-43</div>
@@ -382,8 +419,8 @@
         let baggageWeightSum = 0;
         let cateringActiveIDs = [];
 
-        // Distinguish standard baggage from catering elements
         positions.forEach(id => {
+            const prefix = id.split('-')[0];
             const suffix = id.split('-')[1];
             const chk = document.getElementById('chk-' + suffix);
             if (chk && chk.checked) {
@@ -402,7 +439,6 @@
                 totalHoldCateringWeight = targetValue - baggageWeightSum;
                 if (totalHoldCateringWeight < 0) totalHoldCateringWeight = 0;
                 
-                // Divide leftover payload allocation equally across designated units
                 const splitWeight = Math.floor(totalHoldCateringWeight / cateringActiveIDs.length);
                 cateringActiveIDs.forEach(id => {
                     document.getElementById(id).value = splitWeight + " kg";
@@ -418,6 +454,11 @@
     }
 
     function calculate() {
+        // --- HOLD 1 ---
+        const h1Positions = ['h1-11l', 'h1-11r', 'h1-12l', 'h1-12r', 'h1-13l', 'h1-13r'];
+        const h1Total = computeFlexibleHold(h1Positions, getVal('target-h1'));
+        updateStatus('status-h1', h1Total, getVal('target-h1'));
+
         // --- HOLD 2 ---
         const h2Total = getVal('h2-23p') + getVal('h2-24p');
         updateStatus('status-h2', h2Total, getVal('target-h2'));
