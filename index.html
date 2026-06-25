@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sunclass Cargo Reconciler - Fixed Layout</title>
+    <title>Sunclass Cargo Reconciler - Fleet Configuration</title>
     <style>
         :root {
             --bg-color: #121212;
@@ -14,6 +14,8 @@
             --error: #f44336;
             --toggle-bg: #2d2d2d;
             --catering-color: #ff9800;
+            --cargo-color: #2196f3;
+            --mail-color: #9c27b0;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -23,7 +25,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 950px;
+            max-width: 1200px;
             margin: 0 auto;
         }
         .header {
@@ -61,7 +63,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.4);
         }
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             background: var(--card-bg);
             padding: 15px;
             border-radius: 8px;
@@ -76,11 +78,11 @@
             justify-content: space-between;
             align-items: center;
         }
-        .grid-layout {
+        .row-grid {
             display: grid;
-            grid-template-columns: 1.2fr 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 12px;
+            grid-template-columns: 1.2fr repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 10px;
             align-items: end;
         }
         .input-wrapper {
@@ -91,18 +93,35 @@
             position: relative;
             transition: all 0.2s ease;
         }
-        .input-wrapper.catering-active {
-            border-color: var(--catering-color);
-            background: #2a1b0c;
+        .input-wrapper.type-catering { border-color: var(--catering-color); background: #2a1b0c; }
+        .input-wrapper.type-cargo { border-color: var(--cargo-color); background: #0c1b2a; }
+        .input-wrapper.type-mail { border-color: var(--mail-color); background: #220c2a; }
+        
+        .label-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
         }
         label { 
-            font-size: 12px; 
+            font-size: 11px; 
             color: #aaa; 
-            display: block; 
-            margin-bottom: 4px; 
             font-weight: bold;
         }
-        .input-wrapper.catering-active label { color: var(--catering-color); }
+        .input-wrapper.type-catering label { color: var(--catering-color); }
+        .input-wrapper.type-cargo label { color: var(--cargo-color); }
+        .input-wrapper.type-mail label { color: var(--mail-color); }
+
+        .weight-badge {
+            font-size: 10px;
+            color: #888;
+            background: #222;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: normal;
+        }
+        .input-wrapper.type-catering .weight-badge { color: #85ff85; background: #153520; }
+
         input[type="number"], input[type="text"] {
             width: 100%;
             background: #2b2b2b;
@@ -111,21 +130,32 @@
             padding: 6px;
             border-radius: 4px;
             box-sizing: border-box;
-            font-size: 14px;
+            font-size: 13px;
+            margin-bottom: 6px;
         }
         input:focus { border-color: var(--accent); outline: none; }
-        .cat-toggle {
+        
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            font-size: 10px;
+            color: #888;
+        }
+        .checkbox-label {
             display: flex;
             align-items: center;
-            gap: 4px;
-            margin-top: 6px;
-            font-size: 11px;
-            color: #888;
+            gap: 3px;
             cursor: pointer;
             user-select: none;
+            font-weight: normal;
         }
-        .cat-toggle input { width: auto; margin: 0; cursor: pointer; }
-        .input-wrapper.catering-active .cat-toggle { color: var(--catering-color); }
+        .checkbox-label input {
+            margin: 0;
+            width: auto;
+            cursor: pointer;
+        }
+        
         .status-badge {
             padding: 4px 10px;
             border-radius: 4px;
@@ -134,7 +164,8 @@
         }
         .match { background: var(--success); color: white; }
         .mismatch { background: var(--error); color: white; }
-        .layout-note { font-size: 11px; color: #666; margin-top: -8px; margin-bottom: 10px; font-style: italic; }
+        .layout-note { font-size: 11px; color: #666; margin-top: -8px; margin-bottom: 12px; font-style: italic; }
+        .hidden-row { display: none !important; }
     </style>
 </head>
 <body>
@@ -150,160 +181,225 @@
 
     <div class="form-group">
         <div class="hold-title">
-            <span>HOLD 1 (Forward Containers / AKE)</span>
+            <span>HOLD 1</span>
             <span id="status-h1" class="status-badge mismatch">Empty</span>
         </div>
-        <div class="layout-note">Sections 11-13</div>
-        <div class="grid-layout">
+        <div class="layout-note" id="note-h1">Sections 11-13 (A330-900 Configuration)</div>
+        
+        <div class="row-grid">
             <div class="input-wrapper" style="background: #111;">
-                <label>Target Loadsheet WT</label>
+                <div class="label-container"><label>Target Loadsheet WT</label></div>
                 <input type="number" id="target-h1" placeholder="0" oninput="calculate()">
             </div>
-            <div class="input-wrapper" id="wrap-11l">
-                <label id="lbl-11l">11L Bags</label>
+            <div class="input-wrapper" id="wrap-h1-11l">
+                <div class="label-container"><label id="lbl-h1-11l">11L Bags</label><span class="weight-badge" id="calc-h1-11l">0 kg</span></div>
                 <input type="number" id="h1-11l" placeholder="0" oninput="calculate()">
-                <label class="cat-toggle"><input type="checkbox" id="chk-11l" onchange="toggleCatering('h1-11l','chk-11l','lbl-11l')"> Catering?</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-11l-bags" checked tabindex="-1" onchange="chkSelect('h1-11l', 'bags')">Bags</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-11l-catering" tabindex="-1" onchange="chkSelect('h1-11l', 'catering')">Cat</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-11l-cargo" tabindex="-1" onchange="chkSelect('h1-11l', 'cargo')">Cargo</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-11l-mail" tabindex="-1" onchange="chkSelect('h1-11l', 'mail')">Mail</label>
+                </div>
             </div>
-            <div class="input-wrapper" id="wrap-11r">
-                <label id="lbl-11r">11R Bags</label>
+            <div class="input-wrapper" id="wrap-h1-11p">
+                <div class="label-container"><label id="lbl-h1-11p">11P Bags</label><span class="weight-badge" id="calc-h1-11p">0 kg</span></div>
+                <input type="number" id="h1-11p" placeholder="0" oninput="calculate()">
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-11p-bags" checked tabindex="-1" onchange="chkSelect('h1-11p', 'bags')">Bags</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-11p-catering" tabindex="-1" onchange="chkSelect('h1-11p', 'catering')">Cat</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-11p-cargo" tabindex="-1" onchange="chkSelect('h1-11p', 'cargo')">Cargo</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-11p-mail" tabindex="-1" onchange="chkSelect('h1-11p', 'mail')">Mail</label>
+                </div>
+            </div>
+            <div class="input-wrapper" id="wrap-h1-11r">
+                <div class="label-container"><label id="lbl-h1-11r">11R Bags</label><span class="weight-badge" id="calc-h1-11r">0 kg</span></div>
                 <input type="number" id="h1-11r" placeholder="0" oninput="calculate()">
-                <label class="cat-toggle"><input type="checkbox" id="chk-11r" onchange="toggleCatering('h1-11r','chk-11r','lbl-11r')"> Catering?</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-11r-bags" checked tabindex="-1" onchange="chkSelect('h1-11r', 'bags')">Bags</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-11r-catering" tabindex="-1" onchange="chkSelect('h1-11r', 'catering')">Cat</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-11r-cargo" tabindex="-1" onchange="chkSelect('h1-11r', 'cargo')">Cargo</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-11r-mail" tabindex="-1" onchange="chkSelect('h1-11r', 'mail')">Mail</label>
+                </div>
             </div>
         </div>
-        <div class="grid-layout">
+
+        <div class="row-grid">
             <div></div>
-            <div class="input-wrapper" id="wrap-12l">
-                <label id="lbl-12l">12L Bags</label>
+            <div class="input-wrapper" id="wrap-h1-12l">
+                <div class="label-container"><label id="lbl-h1-12l">12L Bags</label><span class="weight-badge" id="calc-h1-12l">0 kg</span></div>
                 <input type="number" id="h1-12l" placeholder="0" oninput="calculate()">
-                <label class="cat-toggle"><input type="checkbox" id="chk-12l" onchange="toggleCatering('h1-12l','chk-12l','lbl-12l')"> Catering?</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-12l-bags" checked tabindex="-1" onchange="chkSelect('h1-12l', 'bags')">Bags</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-12l-catering" tabindex="-1" onchange="chkSelect('h1-12l', 'catering')">Cat</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-12l-cargo" tabindex="-1" onchange="chkSelect('h1-12l', 'cargo')">Cargo</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-12l-mail" tabindex="-1" onchange="chkSelect('h1-12l', 'mail')">Mail</label>
+                </div>
             </div>
-            <div class="input-wrapper" id="wrap-12r">
-                <label id="lbl-12r">12R Bags</label>
+            <div class="input-wrapper" id="wrap-h1-12p">
+                <div class="label-container"><label id="lbl-h1-12p">12P Bags</label><span class="weight-badge" id="calc-h1-12p">0 kg</span></div>
+                <input type="number" id="h1-12p" placeholder="0" oninput="calculate()">
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-12p-bags" checked tabindex="-1" onchange="chkSelect('h1-12p', 'bags')">Bags</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-12p-catering" tabindex="-1" onchange="chkSelect('h1-12p', 'catering')">Cat</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-12p-cargo" tabindex="-1" onchange="chkSelect('h1-12p', 'cargo')">Cargo</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-12p-mail" tabindex="-1" onchange="chkSelect('h1-12p', 'mail')">Mail</label>
+                </div>
+            </div>
+            <div class="input-wrapper" id="wrap-h1-12r">
+                <div class="label-container"><label id="lbl-h1-12r">12R Bags</label><span class="weight-badge" id="calc-h1-12r">0 kg</span></div>
                 <input type="number" id="h1-12r" placeholder="0" oninput="calculate()">
-                <label class="cat-toggle"><input type="checkbox" id="chk-12r" onchange="toggleCatering('h1-12r','chk-12r','lbl-12r')"> Catering?</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-12r-bags" checked tabindex="-1" onchange="chkSelect('h1-12r', 'bags')">Bags</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-12r-catering" tabindex="-1" onchange="chkSelect('h1-12r', 'catering')">Cat</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-12r-cargo" tabindex="-1" onchange="chkSelect('h1-12r', 'cargo')">Cargo</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-12r-mail" tabindex="-1" onchange="chkSelect('h1-12r', 'mail')">Mail</label>
+                </div>
             </div>
         </div>
-        <div class="grid-layout">
+
+        <div class="row-grid" id="row-h1-13">
             <div></div>
-            <div class="input-wrapper" id="wrap-13l">
-                <label id="lbl-13l">13L Bags</label>
+            <div class="input-wrapper" id="wrap-h1-13l">
+                <div class="label-container"><label id="lbl-h1-13l">13L Bags</label><span class="weight-badge" id="calc-h1-13l">0 kg</span></div>
                 <input type="number" id="h1-13l" placeholder="0" oninput="calculate()">
-                <label class="cat-toggle"><input type="checkbox" id="chk-13l" onchange="toggleCatering('h1-13l','chk-13l','lbl-13l')"> Catering?</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-13l-bags" checked tabindex="-1" onchange="chkSelect('h1-13l', 'bags')">Bags</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-13l-catering" tabindex="-1" onchange="chkSelect('h1-13l', 'catering')">Cat</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-13l-cargo" tabindex="-1" onchange="chkSelect('h1-13l', 'cargo')">Cargo</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-13l-mail" tabindex="-1" onchange="chkSelect('h1-13l', 'mail')">Mail</label>
+                </div>
             </div>
-            <div class="input-wrapper" id="wrap-13r">
-                <label id="lbl-13r">13R Bags</label>
+            <div></div>
+            <div class="input-wrapper" id="wrap-h1-13r">
+                <div class="label-container"><label id="lbl-h1-13r">13R Bags</label><span class="weight-badge" id="calc-h1-13r">0 kg</span></div>
                 <input type="number" id="h1-13r" placeholder="0" oninput="calculate()">
-                <label class="cat-toggle"><input type="checkbox" id="chk-13r" onchange="toggleCatering('h1-13r','chk-13r','lbl-13r')"> Catering?</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-13r-bags" checked tabindex="-1" onchange="chkSelect('h1-13r', 'bags')">Bags</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-13r-catering" tabindex="-1" onchange="chkSelect('h1-13r', 'catering')">Cat</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-13r-cargo" tabindex="-1" onchange="chkSelect('h1-13r', 'cargo')">Cargo</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h1-13r-mail" tabindex="-1" onchange="chkSelect('h1-13r', 'mail')">Mail</label>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="form-group">
         <div class="hold-title">
-            <span>HOLD 2 (Forward Pallets / PMC Gross)</span>
+            <span>HOLD 2</span>
             <span id="status-h2" class="status-badge mismatch">Empty</span>
         </div>
-        <div class="layout-note">Sections 21-26</div>
-        <div class="grid-layout">
+        <div class="layout-note">Sections 21-26 (Standard Fleet Layout)</div>
+        
+        <div class="row-grid">
             <div class="input-wrapper" style="background: #111;">
-                <label>Target Loadsheet WT</label>
+                <div class="label-container"><label>Target Loadsheet WT</label></div>
                 <input type="number" id="target-h2" placeholder="0" oninput="calculate()">
             </div>
-            <div class="input-wrapper"><label>Pos 23P WT (Gross)</label><input type="number" id="h2-23p" placeholder="0" oninput="calculate()"></div>
-            <div class="input-wrapper"><label>Pos 24P WT (Gross)</label><input type="number" id="h2-24p" placeholder="0" oninput="calculate()"></div>
+            <div class="input-wrapper" id="wrap-h2-21l"><div class="label-container"><label id="lbl-h2-21l">21L Bags</label><span class="weight-badge" id="calc-h2-21l">0 kg</span></div><input type="number" id="h2-21l" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h2-21l-bags" checked tabindex="-1" onchange="chkSelect('h2-21l','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-21l-catering" tabindex="-1" onchange="chkSelect('h2-21l','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-21l-cargo" tabindex="-1" onchange="chkSelect('h2-21l','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-21l-mail" tabindex="-1" onchange="chkSelect('h2-21l','mail')">Mail</label></div></div>
+            <div class="input-wrapper" id="wrap-h2-21p"><div class="label-container"><label id="lbl-h2-21p">21P Bags</label><span class="weight-badge" id="calc-h2-21p">0 kg</span></div><input type="number" id="h2-21p" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h2-21p-bags" checked tabindex="-1" onchange="chkSelect('h2-21p','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-21p-catering" tabindex="-1" onchange="chkSelect('h2-21p','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-21p-cargo" tabindex="-1" onchange="chkSelect('h2-21p','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-21p-mail" tabindex="-1" onchange="chkSelect('h2-21p','mail')">Mail</label></div></div>
+            <div class="input-wrapper" id="wrap-h2-21r"><div class="label-container"><label id="lbl-h2-21r">21R Bags</label><span class="weight-badge" id="calc-h2-21r">0 kg</span></div><input type="number" id="h2-21r" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h2-21r-bags" checked tabindex="-1" onchange="chkSelect('h2-21r','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-21r-catering" tabindex="-1" onchange="chkSelect('h2-21r','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-21r-cargo" tabindex="-1" onchange="chkSelect('h2-21r','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-21r-mail" tabindex="-1" onchange="chkSelect('h2-21r','mail')">Mail</label></div></div>
+        </div>
+        <div class="row-grid">
+            <div></div>
+            <div class="input-wrapper" id="wrap-h2-22l"><div class="label-container"><label id="lbl-h2-22l">22L Bags</label><span class="weight-badge" id="calc-h2-22l">0 kg</span></div><input type="number" id="h2-22l" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h2-22l-bags" checked tabindex="-1" onchange="chkSelect('h2-22l','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-22l-catering" tabindex="-1" onchange="chkSelect('h2-22l','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-22l-cargo" tabindex="-1" onchange="chkSelect('h2-22l','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-22l-mail" tabindex="-1" onchange="chkSelect('h2-22l','mail')">Mail</label></div></div>
+            <div class="input-wrapper" id="wrap-h2-22p"><div class="label-container"><label id="lbl-h2-22p">22P Bags</label><span class="weight-badge" id="calc-h2-22p">0 kg</span></div><input type="number" id="h2-22p" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h2-22p-bags" checked tabindex="-1" onchange="chkSelect('h2-22p','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-22p-catering" tabindex="-1" onchange="chkSelect('h2-22p','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-22p-cargo" tabindex="-1" onchange="chkSelect('h2-22p','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-22p-mail" tabindex="-1" onchange="chkSelect('h2-22p','mail')">Mail</label></div></div>
+            <div class="input-wrapper" id="wrap-h2-22r"><div class="label-container"><label id="lbl-h2-22r">22R Bags</label><span class="weight-badge" id="calc-h2-22r">0 kg</span></div><input type="number" id="h2-22r" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h2-22r-bags" checked tabindex="-1" onchange="chkSelect('h2-22r','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-22r-catering" tabindex="-1" onchange="chkSelect('h2-22r','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-22r-cargo" tabindex="-1" onchange="chkSelect('h2-22r','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-22r-mail" tabindex="-1" onchange="chkSelect('h2-22r','mail')">Mail</label></div></div>
+        </div>
+        <div class="row-grid">
+            <div></div>
+            <div class="input-wrapper" id="wrap-h2-23l"><div class="label-container"><label id="lbl-h2-23l">23L Bags</label><span class="weight-badge" id="calc-h2-23l">0 kg</span></div><input type="number" id="h2-23l" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h2-23l-bags" checked tabindex="-1" onchange="chkSelect('h2-23l','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-23l-catering" tabindex="-1" onchange="chkSelect('h2-23l','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-23l-cargo" tabindex="-1" onchange="chkSelect('h2-23l','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-23l-mail" tabindex="-1" onchange="chkSelect('h2-23l','mail')">Mail</label></div></div>
+            <div class="input-wrapper" id="wrap-h2-23p"><div class="label-container"><label id="lbl-h2-23p">23P Bags</label><span class="weight-badge" id="calc-h2-23p">0 kg</span></div><input type="number" id="h2-23p" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h2-23p-bags" checked tabindex="-1" onchange="chkSelect('h2-23p','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-23p-catering" tabindex="-1" onchange="chkSelect('h2-23p','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-23p-cargo" tabindex="-1" onchange="chkSelect('h2-23p','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-23p-mail" tabindex="-1" onchange="chkSelect('h2-23p','mail')">Mail</label></div></div>
+            <div class="input-wrapper" id="wrap-h2-23r"><div class="label-container"><label id="lbl-h2-23r">23R Bags</label><span class="weight-badge" id="calc-h2-23r">0 kg</span></div><input type="number" id="h2-23r" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h2-23r-bags" checked tabindex="-1" onchange="chkSelect('h2-23r','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-23r-catering" tabindex="-1" onchange="chkSelect('h2-23r','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-23r-cargo" tabindex="-1" onchange="chkSelect('h2-23r','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-23r-mail" tabindex="-1" onchange="chkSelect('h2-23r','mail')">Mail</label></div></div>
+        </div>
+        <div class="row-grid">
+            <div></div>
+            <div class="input-wrapper" id="wrap-h2-24l"><div class="label-container"><label id="lbl-h2-24l">24L Bags</label><span class="weight-badge" id="calc-h2-24l">0 kg</span></div><input type="number" id="h2-24l" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h2-24l-bags" checked tabindex="-1" onchange="chkSelect('h2-24l','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-24l-catering" tabindex="-1" onchange="chkSelect('h2-24l','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-24l-cargo" tabindex="-1" onchange="chkSelect('h2-24l','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-24l-mail" tabindex="-1" onchange="chkSelect('h2-24l','mail')">Mail</label></div></div>
+            <div class="input-wrapper" id="wrap-h2-24p"><div class="label-container"><label id="lbl-h2-24p">24P Bags</label><span class="weight-badge" id="calc-h2-24p">0 kg</span></div><input type="number" id="h2-24p" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h2-24p-bags" checked tabindex="-1" onchange="chkSelect('h2-24p','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-24p-catering" tabindex="-1" onchange="chkSelect('h2-24p','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-24p-cargo" tabindex="-1" onchange="chkSelect('h2-24p','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-24p-mail" tabindex="-1" onchange="chkSelect('h2-24p','mail')">Mail</label></div></div>
+            <div class="input-wrapper" id="wrap-h2-24r"><div class="label-container"><label id="lbl-h2-24r">24R Bags</label><span class="weight-badge" id="calc-h2-24r">0 kg</span></div><input type="number" id="h2-24r" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h2-24r-bags" checked tabindex="-1" onchange="chkSelect('h2-24r','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-24r-catering" tabindex="-1" onchange="chkSelect('h2-24r','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-24r-cargo" tabindex="-1" onchange="chkSelect('h2-24r','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-24r-mail" tabindex="-1" onchange="chkSelect('h2-24r','mail')">Mail</label></div></div>
+        </div>
+        <div class="row-grid">
+            <div></div>
+            <div class="input-wrapper" id="wrap-h2-25l"><div class="label-container"><label id="lbl-h2-25l">25L Bags</label><span class="weight-badge" id="calc-h2-25l">0 kg</span></div><input type="number" id="h2-25l" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h2-25l-bags" checked tabindex="-1" onchange="chkSelect('h2-25l','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-25l-catering" tabindex="-1" onchange="chkSelect('h2-25l','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-25l-cargo" tabindex="-1" onchange="chkSelect('h2-25l','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-25l-mail" tabindex="-1" onchange="chkSelect('h2-25l','mail')">Mail</label></div></div>
+            <div></div>
+            <div class="input-wrapper" id="wrap-h2-25r"><div class="label-container"><label id="lbl-h2-25r">25R Bags</label><span class="weight-badge" id="calc-h2-25r">0 kg</span></div><input type="number" id="h2-25r" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h2-25r-bags" checked tabindex="-1" onchange="chkSelect('h2-25r','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-25r-catering" tabindex="-1" onchange="chkSelect('h2-25r','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-25r-cargo" tabindex="-1" onchange="chkSelect('h2-25r','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-25r-mail" tabindex="-1" onchange="chkSelect('h2-25r','mail')">Mail</label></div></div>
+        </div>
+        <div class="row-grid">
+            <div></div>
+            <div class="input-wrapper" id="wrap-h2-26l"><div class="label-container"><label id="lbl-h2-26l">26L Bags</label><span class="weight-badge" id="calc-h2-26l">0 kg</span></div><input type="number" id="h2-26l" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h2-26l-bags" checked tabindex="-1" onchange="chkSelect('h2-26l','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-26l-catering" tabindex="-1" onchange="chkSelect('h2-26l','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-26l-cargo" tabindex="-1" onchange="chkSelect('h2-26l','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-26l-mail" tabindex="-1" onchange="chkSelect('h2-26l','mail')">Mail</label></div></div>
+            <div></div>
+            <div class="input-wrapper" id="wrap-h2-26r"><div class="label-container"><label id="lbl-h2-26r">26R Bags</label><span class="weight-badge" id="calc-h2-26r">0 kg</span></div><input type="number" id="h2-26r" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h2-26r-bags" checked tabindex="-1" onchange="chkSelect('h2-26r','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-26r-catering" tabindex="-1" onchange="chkSelect('h2-26r','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-26r-cargo" tabindex="-1" onchange="chkSelect('h2-26r','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h2-26r-mail" tabindex="-1" onchange="chkSelect('h2-26r','mail')">Mail</label></div></div>
         </div>
     </div>
 
     <div class="form-group">
         <div class="hold-title">
-            <span>HOLD 3 (Aft Containers / AKE)</span>
+            <span>HOLD 3</span>
             <span id="status-h3" class="status-badge mismatch">Empty</span>
         </div>
-        <div class="layout-note" id="h3-layout-text">Sections 32-34 (A390 Standard)</div>
-        
-        <div class="grid-layout" id="row-31" style="display: none;">
+        <div class="layout-note" id="note-h3">Sections 32-34 (A330-900 Configuration)</div>
+
+        <div class="row-grid" id="row-h3-31">
             <div class="input-wrapper" style="background: #111;">
-                <label>Target Loadsheet WT</label>
+                <div class="label-container"><label>Target Loadsheet WT</label></div>
                 <input type="number" id="target-h3" placeholder="0" oninput="calculate()">
             </div>
-            <div class="input-wrapper" id="wrap-31l">
-                <label id="lbl-31l">31L Bags</label>
-                <input type="number" id="h3-31l" placeholder="0" oninput="calculate()">
-                <label class="cat-toggle"><input type="checkbox" id="chk-31l" onchange="toggleCatering('h3-31l','chk-31l','lbl-31l')"> Catering?</label>
-            </div>
-            <div class="input-wrapper" id="wrap-31r">
-                <label id="lbl-31r">31R Bags</label>
-                <input type="number" id="h3-31r" placeholder="0" oninput="calculate()">
-                <label class="cat-toggle"><input type="checkbox" id="chk-31r" onchange="toggleCatering('h3-31r','chk-31r','lbl-31r')"> Catering?</label>
-            </div>
+            <div class="input-wrapper" id="wrap-h3-31l"><div class="label-container"><label id="lbl-h3-31l">31L Bags</label><span class="weight-badge" id="calc-h3-31l">0 kg</span></div><input type="number" id="h3-31l" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h3-31l-bags" checked tabindex="-1" onchange="chkSelect('h3-31l','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-31l-catering" tabindex="-1" onchange="chkSelect('h3-31l','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-31l-cargo" tabindex="-1" onchange="chkSelect('h3-31l','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-31l-mail" tabindex="-1" onchange="chkSelect('h3-31l','mail')">Mail</label></div></div>
+            <div class="input-wrapper" id="wrap-h3-31p"><div class="label-container"><label id="lbl-h3-31p">31P Bags</label><span class="weight-badge" id="calc-h3-31p">0 kg</span></div><input type="number" id="h3-31p" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h3-31p-bags" checked tabindex="-1" onchange="chkSelect('h3-31p','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-31p-catering" tabindex="-1" onchange="chkSelect('h3-31p','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-31p-cargo" tabindex="-1" onchange="chkSelect('h3-31p','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-31p-mail" tabindex="-1" onchange="chkSelect('h3-31p','mail')">Mail</label></div></div>
+            <div class="input-wrapper" id="wrap-h3-31r"><div class="label-container"><label id="lbl-h3-31r">31R Bags</label><span class="weight-badge" id="calc-h3-31r">0 kg</span></div><input type="number" id="h3-31r" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h3-31r-bags" checked tabindex="-1" onchange="chkSelect('h3-31r','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-31r-catering" tabindex="-1" onchange="chkSelect('h3-31r','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-31r-cargo" tabindex="-1" onchange="chkSelect('h3-31r','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-31r-mail" tabindex="-1" onchange="chkSelect('h3-31r','mail')">Mail</label></div></div>
         </div>
 
-        <div class="grid-layout" id="row-33-container">
-            <div class="input-wrapper" id="h3-main-target-box" style="background: #111;">
-                <label>Target Loadsheet WT</label>
+        <div class="row-grid" id="row-h3-32-root">
+            <div class="input-wrapper" id="h3-alt-target-box" style="background: #111;">
+                <div class="label-container"><label>Target Loadsheet WT</label></div>
                 <input type="number" id="target-h3-alt" placeholder="0" oninput="syncTargets('target-h3-alt','target-h3')">
             </div>
-            <div class="input-wrapper" id="wrap-33l">
-                <label id="lbl-33l">33L Bags</label>
-                <input type="number" id="h3-33l" placeholder="0" oninput="calculate()">
-                <label class="cat-toggle"><input type="checkbox" id="chk-33l" onchange="toggleCatering('h3-33l','chk-33l','lbl-33l')"> Catering?</label>
-            </div>
-            <div class="input-wrapper" id="wrap-33r">
-                <label id="lbl-33r">33R Bags</label>
-                <input type="number" id="h3-33r" placeholder="0" oninput="calculate()">
-                <label class="cat-toggle"><input type="checkbox" id="chk-33r" onchange="toggleCatering('h3-33r','chk-33r','lbl-33r')"> Catering?</label>
-            </div>
+            <div class="input-wrapper" id="wrap-h3-32l"><div class="label-container"><label id="lbl-h3-32l">32L Bags</label><span class="weight-badge" id="calc-h3-32l">0 kg</span></div><input type="number" id="h3-32l" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h3-32l-bags" checked tabindex="-1" onchange="chkSelect('h3-32l','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-32l-catering" tabindex="-1" onchange="chkSelect('h3-32l','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-32l-cargo" tabindex="-1" onchange="chkSelect('h3-32l','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-32l-mail" tabindex="-1" onchange="chkSelect('h3-32l','mail')">Mail</label></div></div>
+            <div class="input-wrapper" id="wrap-h3-32p"><div class="label-container"><label id="lbl-h3-32p">32P Bags</label><span class="weight-badge" id="calc-h3-32p">0 kg</span></div><input type="number" id="h3-32p" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h3-32p-bags" checked tabindex="-1" onchange="chkSelect('h3-32p','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-32p-catering" tabindex="-1" onchange="chkSelect('h3-32p','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-32p-cargo" tabindex="-1" onchange="chkSelect('h3-32p','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-32p-mail" tabindex="-1" onchange="chkSelect('h3-32p','mail')">Mail</label></div></div>
+            <div class="input-wrapper" id="wrap-h3-32r"><div class="label-container"><label id="lbl-h3-32r">32R Bags</label><span class="weight-badge" id="calc-h3-32r">0 kg</span></div><input type="number" id="h3-32r" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h3-32r-bags" checked tabindex="-1" onchange="chkSelect('h3-32r','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-32r-catering" tabindex="-1" onchange="chkSelect('h3-32r','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-32r-cargo" tabindex="-1" onchange="chkSelect('h3-32r','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-32r-mail" tabindex="-1" onchange="chkSelect('h3-32r','mail')">Mail</label></div></div>
         </div>
 
-        <div class="grid-layout">
+        <div class="row-grid">
             <div></div>
-            <div class="input-wrapper" id="wrap-34l">
-                <label id="lbl-34l">34L Bags</label>
-                <input type="number" id="h3-34l" placeholder="0" oninput="calculate()">
-                <label class="cat-toggle"><input type="checkbox" id="chk-34l" onchange="toggleCatering('h3-34l','chk-34l','lbl-34l')"> Catering?</label>
-            </div>
-            <div class="input-wrapper" id="wrap-34r">
-                <label id="lbl-34r">34R Bags</label>
-                <input type="number" id="h3-34r" placeholder="0" oninput="calculate()">
-                <label class="cat-toggle"><input type="checkbox" id="chk-34r" onchange="toggleCatering('h3-34r','chk-34r','lbl-34r')"> Catering?</label>
-            </div>
+            <div class="input-wrapper" id="wrap-h3-33l"><div class="label-container"><label id="lbl-h3-33l">33L Bags</label><span class="weight-badge" id="calc-h3-33l">0 kg</span></div><input type="number" id="h3-33l" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h3-33l-bags" checked tabindex="-1" onchange="chkSelect('h3-33l','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-33l-catering" tabindex="-1" onchange="chkSelect('h3-33l','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-33l-cargo" tabindex="-1" onchange="chkSelect('h3-33l','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-33l-mail" tabindex="-1" onchange="chkSelect('h3-33l','mail')">Mail</label></div></div>
+            <div class="input-wrapper" id="wrap-h3-33p"><div class="label-container"><label id="lbl-h3-33p">33P Bags</label><span class="weight-badge" id="calc-h3-33p">0 kg</span></div><input type="number" id="h3-33p" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h3-33p-bags" checked tabindex="-1" onchange="chkSelect('h3-33p','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-33p-catering" tabindex="-1" onchange="chkSelect('h3-33p','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-33p-cargo" tabindex="-1" onchange="chkSelect('h3-33p','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-33p-mail" tabindex="-1" onchange="chkSelect('h3-33p','mail')">Mail</label></div></div>
+            <div class="input-wrapper" id="wrap-h3-33r"><div class="label-container"><label id="lbl-h3-33r">33R Bags</label><span class="weight-badge" id="calc-h3-33r">0 kg</span></div><input type="number" id="h3-33r" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h3-33r-bags" checked tabindex="-1" onchange="chkSelect('h3-33r','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-33r-catering" tabindex="-1" onchange="chkSelect('h3-33r','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-33r-cargo" tabindex="-1" onchange="chkSelect('h3-33r','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-33r-mail" tabindex="-1" onchange="chkSelect('h3-33r','mail')">Mail</label></div></div>
+        </div>
+
+        <div class="row-grid">
+            <div></div>
+            <div class="input-wrapper" id="wrap-h3-34l"><div class="label-container"><label id="lbl-h3-34l">34L Bags</label><span class="weight-badge" id="calc-h3-34l">0 kg</span></div><input type="number" id="h3-34l" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h3-34l-bags" checked tabindex="-1" onchange="chkSelect('h3-34l','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-34l-catering" tabindex="-1" onchange="chkSelect('h3-34l','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-34l-cargo" tabindex="-1" onchange="chkSelect('h3-34l','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-34l-mail" tabindex="-1" onchange="chkSelect('h3-34l','mail')">Mail</label></div></div>
+            <div></div>
+            <div class="input-wrapper" id="wrap-h3-34r"><div class="label-container"><label id="lbl-h3-34r">34R Bags</label><span class="weight-badge" id="calc-h3-34r">0 kg</span></div><input type="number" id="h3-34r" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h3-34r-bags" checked tabindex="-1" onchange="chkSelect('h3-34r','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-34r-catering" tabindex="-1" onchange="chkSelect('h3-34r','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-34r-cargo" tabindex="-1" onchange="chkSelect('h3-34r','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h3-34r-mail" tabindex="-1" onchange="chkSelect('h3-34r','mail')">Mail</label></div></div>
         </div>
     </div>
 
     <div class="form-group">
         <div class="hold-title">
-            <span>HOLD 4 (Aft Containers / AKE)</span>
+            <span>HOLD 4</span>
             <span id="status-h4" class="status-badge mismatch">Empty</span>
         </div>
-        <div class="layout-note">Sections 41-43</div>
-        <div class="grid-layout">
+        <div class="layout-note">Sections 41-43 (Standard Fleet Layout)</div>
+        
+        <div class="row-grid">
             <div class="input-wrapper" style="background: #111;">
-                <label>Target Loadsheet WT</label>
+                <div class="label-container"><label>Target Loadsheet WT</label></div>
                 <input type="number" id="target-h4" placeholder="0" oninput="calculate()">
             </div>
-            <div class="input-wrapper" id="wrap-41l">
-                <label id="lbl-41l">41L Bags</label>
-                <input type="number" id="h4-41l" placeholder="0" oninput="calculate()">
-                <label class="cat-toggle"><input type="checkbox" id="chk-41l" onchange="toggleCatering('h4-41l','chk-41l','lbl-41l')"> Catering?</label>
-            </div>
-            <div class="input-wrapper" id="wrap-41r">
-                <label id="lbl-41r">41R Bags</label>
-                <input type="number" id="h4-41r" placeholder="0" oninput="calculate()">
-                <label class="cat-toggle"><input type="checkbox" id="chk-41r" onchange="toggleCatering('h4-41r','chk-41r','lbl-41r')"> Catering?</label>
-            </div>
+            <div class="input-wrapper" id="wrap-h4-41l"><div class="label-container"><label id="lbl-h4-41l">41L Bags</label><span class="weight-badge" id="calc-h4-41l">0 kg</span></div><input type="number" id="h4-41l" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h4-41l-bags" checked tabindex="-1" onchange="chkSelect('h4-41l','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-41l-catering" tabindex="-1" onchange="chkSelect('h4-41l','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-41l-cargo" tabindex="-1" onchange="chkSelect('h4-41l','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-41l-mail" tabindex="-1" onchange="chkSelect('h4-41l','mail')">Mail</label></div></div>
+            <div class="input-wrapper" id="wrap-h4-41p"><div class="label-container"><label id="lbl-h4-41p">41P Bags</label><span class="weight-badge" id="calc-h4-41p">0 kg</span></div><input type="number" id="h4-41p" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h4-41p-bags" checked tabindex="-1" onchange="chkSelect('h4-41p','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-41p-catering" tabindex="-1" onchange="chkSelect('h4-41p','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-41p-cargo" tabindex="-1" onchange="chkSelect('h4-41p','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-41p-mail" tabindex="-1" onchange="chkSelect('h4-41p','mail')">Mail</label></div></div>
+            <div class="input-wrapper" id="wrap-h4-41r"><div class="label-container"><label id="lbl-h4-41r">41R Bags</label><span class="weight-badge" id="calc-h4-41r">0 kg</span></div><input type="number" id="h4-41r" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h4-41r-bags" checked tabindex="-1" onchange="chkSelect('h4-41r','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-41r-catering" tabindex="-1" onchange="chkSelect('h4-41r','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-41r-cargo" tabindex="-1" onchange="chkSelect('h4-41r','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-41r-mail" tabindex="-1" onchange="chkSelect('h4-41r','mail')">Mail</label></div></div>
         </div>
-        <div class="grid-layout">
+        <div class="row-grid">
             <div></div>
-            <div class="input-wrapper" id="wrap-42l">
-                <label id="lbl-42l">42L Bags</label>
-                <input type="number" id="h4-42l" placeholder="0" oninput="calculate()">
-                <label class="cat-toggle"><input type="checkbox" id="chk-42l" onchange="toggleCatering('h4-42l','chk-42l','lbl-42l')"> Catering?</label>
-            </div>
-            <div class="input-wrapper" id="wrap-43r">
-                <label id="lbl-43r">43R Bags</label>
-                <input type="number" id="h4-43r" placeholder="0" oninput="calculate()">
-                <label class="cat-toggle"><input type="checkbox" id="chk-43r" onchange="toggleCatering('h4-43r','chk-43r','lbl-43r')"> Catering?</label>
-            </div>
+            <div class="input-wrapper" id="wrap-h4-42l"><div class="label-container"><label id="lbl-h4-42l">42L Bags</label><span class="weight-badge" id="calc-h4-42l">0 kg</span></div><input type="number" id="h4-42l" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h4-42l-bags" checked tabindex="-1" onchange="chkSelect('h4-42l','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-42l-catering" tabindex="-1" onchange="chkSelect('h4-42l','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-42l-cargo" tabindex="-1" onchange="chkSelect('h4-42l','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-42l-mail" tabindex="-1" onchange="chkSelect('h4-42l','mail')">Mail</label></div></div>
+            <div class="input-wrapper" id="wrap-h4-42p"><div class="label-container"><label id="lbl-h4-42p">42P Bags</label><span class="weight-badge" id="calc-h4-42p">0 kg</span></div><input type="number" id="h4-42p" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h4-42p-bags" checked tabindex="-1" onchange="chkSelect('h4-42p','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-42p-catering" tabindex="-1" onchange="chkSelect('h4-42p','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-42p-cargo" tabindex="-1" onchange="chkSelect('h4-42p','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-42p-mail" tabindex="-1" onchange="chkSelect('h4-42p','mail')">Mail</label></div></div>
+            <div class="input-wrapper" id="wrap-h4-42r"><div class="label-container"><label id="lbl-h4-42r">42R Bags</label><span class="weight-badge" id="calc-h4-42r">0 kg</span></div><input type="number" id="h4-42r" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h4-42r-bags" checked tabindex="-1" onchange="chkSelect('h4-42r','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-42r-catering" tabindex="-1" onchange="chkSelect('h4-42r','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-42r-cargo" tabindex="-1" onchange="chkSelect('h4-42r','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-42r-mail" tabindex="-1" onchange="chkSelect('h4-42r','mail')">Mail</label></div></div>
+        </div>
+        <div class="row-grid">
+            <div></div>
+            <div class="input-wrapper" id="wrap-h4-43l"><div class="label-container"><label id="lbl-h4-43l">43L Bags</label><span class="weight-badge" id="calc-h4-43l">0 kg</span></div><input type="number" id="h4-43l" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h4-43l-bags" checked tabindex="-1" onchange="chkSelect('h4-43l','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-43l-catering" tabindex="-1" onchange="chkSelect('h4-43l','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-43l-cargo" tabindex="-1" onchange="chkSelect('h4-43l','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-43l-mail" tabindex="-1" onchange="chkSelect('h4-43l','mail')">Mail</label></div></div>
+            <div></div>
+            <div class="input-wrapper" id="wrap-h4-43r"><div class="label-container"><label id="lbl-h4-43r">43R Bags</label><span class="weight-badge" id="calc-h4-43r">0 kg</span></div><input type="number" id="h4-43r" placeholder="0" oninput="calculate()"><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" id="chk-h4-43r-bags" checked tabindex="-1" onchange="chkSelect('h4-43r','bags')">Bags</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-43r-catering" tabindex="-1" onchange="chkSelect('h4-43r','catering')">Cat</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-43r-cargo" tabindex="-1" onchange="chkSelect('h4-43r','cargo')">Cargo</label><label class="checkbox-label"><input type="checkbox" id="chk-h4-43r-mail" tabindex="-1" onchange="chkSelect('h4-43r','mail')">Mail</label></div></div>
         </div>
     </div>
 
@@ -312,13 +408,23 @@
             <span>HOLD 5 (Loose Bulk)</span>
             <span id="status-h5" class="status-badge mismatch">Empty</span>
         </div>
-        <div class="layout-note">Bulk Compartment (No metal container weights processed)</div>
-        <div class="grid-layout">
+        <div class="layout-note">Bulk Compartment</div>
+        <div class="row-grid">
             <div class="input-wrapper" style="background: #111;">
-                <label>Target Loadsheet WT</label>
+                <div class="label-container"><label>Target Loadsheet WT</label></div>
                 <input type="number" id="target-h5" placeholder="0" oninput="calculate()">
             </div>
-            <div class="input-wrapper"><label>Bulk Bags Count</label><input type="number" id="h5-bags" placeholder="0" oninput="calculate()"></div>
+            <div class="input-wrapper" id="wrap-h5-bulk">
+                <div class="label-container"><label id="lbl-h5-bulk">BULK Bags</label><span class="weight-badge" id="calc-h5-bulk">0 kg</span></div>
+                <input type="number" id="h5-bulk" placeholder="0" oninput="calculate()">
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h5-bulk-bags" checked tabindex="-1" onchange="chkSelect('h5-bulk','bags')">Bags</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h5-bulk-catering" tabindex="-1" onchange="chkSelect('h5-bulk','catering')">Cat</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h5-bulk-cargo" tabindex="-1" onchange="chkSelect('h5-bulk','cargo')">Cargo</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-h5-bulk-mail" tabindex="-1" onchange="chkSelect('h5-bulk','mail')">Mail</label>
+                </div>
+            </div>
+            <div></div>
             <div></div>
         </div>
     </div>
@@ -332,20 +438,22 @@
         document.getElementById('btn-A390').classList.toggle('active', type === 'A390');
         document.getElementById('btn-A333').classList.toggle('active', type === 'A333');
         
-        const layoutText = document.getElementById('h3-layout-text');
-        const row31 = document.getElementById('row-31');
-        const mainTargetBox = document.getElementById('h3-main-target-box');
+        document.getElementById('note-h1').textContent = type === 'A390' ? "Sections 11-13 (A330-900 Configuration)" : "Sections 11-12 (A330-300 Configuration)";
+        document.getElementById('note-h3').textContent = type === 'A390' ? "Sections 32-34 (A330-900 Configuration)" : "Sections 31-34 (A330-300 Configuration)";
 
         if (type === 'A333') {
-            layoutText.textContent = "Sections 31-34 (Section 31 Active)";
-            row31.style.display = 'grid';
-            mainTargetBox.style.display = 'none';
+            document.getElementById('row-h1-13').classList.add('hidden-row');
+            document.getElementById('row-h3-31').classList.remove('hidden-row');
+            document.getElementById('h3-alt-target-box').style.display = 'none';
+            resetField('h1-13l');
+            resetField('h1-13r');
         } else {
-            layoutText.textContent = "Sections 32-34 (A390 Standard)";
-            row31.style.display = 'none';
-            mainTargetBox.style.display = 'block';
-            resetField('h3-31l','chk-31l','lbl-31l');
-            resetField('h3-31r','chk-31r','lbl-31r');
+            document.getElementById('row-h1-13').classList.remove('hidden-row');
+            document.getElementById('row-h3-31').classList.add('hidden-row');
+            document.getElementById('h3-alt-target-box').style.display = 'block';
+            resetField('h3-31l');
+            resetField('h3-31p');
+            resetField('h3-31r');
         }
         calculate();
     }
@@ -355,37 +463,74 @@
         calculate();
     }
 
-    function toggleCatering(inputId, checkId, labelId) {
-        const inputEl = document.getElementById(inputId);
-        const checkEl = document.getElementById(checkId);
-        const labelEl = document.getElementById(labelId);
-        const wrapper = inputEl.parentElement;
-        const posCode = inputId.split('-')[1].toUpperCase();
+    function chkSelect(inputId, selectedMode) {
+        const modes = ['bags', 'catering', 'cargo', 'mail'];
+        const targetState = document.getElementById(`chk-${inputId}-${selectedMode}`).checked;
 
-        if (checkEl.checked) {
-            wrapper.classList.add('catering-active');
-            labelEl.textContent = posCode + " Catering WT";
+        // Force single check logic processing simulation rule
+        modes.forEach(m => {
+            document.getElementById(`chk-${inputId}-${m}`).checked = false;
+        });
+
+        // Fall back gracefully to standard "bags" mode if field was intentionally unmarked completely
+        let activeMode = 'bags';
+        if (targetState) {
+            document.getElementById(`chk-${inputId}-${selectedMode}`).checked = true;
+            activeMode = selectedMode;
+        } else {
+            document.getElementById(`chk-${inputId}-bags`).checked = true;
+        }
+
+        const inputEl = document.getElementById(inputId);
+        const labelEl = document.getElementById('lbl-' + inputId);
+        const wrapper = inputEl.parentElement;
+        
+        const posParts = inputId.split('-');
+        const baseName = (posParts[1] === 'bulk') ? 'BULK' : posParts[1].toUpperCase();
+        const aviationName = (activeMode === 'bags') ? baseName : inputId.replace('-', '').toUpperCase();
+
+        wrapper.classList.remove('type-catering', 'type-cargo', 'type-mail');
+
+        if (activeMode === 'catering') {
+            wrapper.classList.add('type-catering');
+            labelEl.textContent = aviationName + " Catering WT";
             inputEl.type = "text";
             inputEl.readOnly = true;
             inputEl.style.background = "#153520";
             inputEl.style.color = "#85ff85";
             inputEl.style.fontWeight = "bold";
         } else {
-            wrapper.classList.remove('catering-active');
-            labelEl.textContent = posCode + " Bags";
             inputEl.type = "number";
             inputEl.readOnly = false;
-            inputEl.value = "";
+            if (inputEl.placeholder === "0" && isNaN(parseFloat(inputEl.value))) {
+                inputEl.value = "";
+            }
             inputEl.style.background = "#2b2b2b";
             inputEl.style.color = "#fff";
             inputEl.style.fontWeight = "normal";
+
+            if (activeMode === 'bags') {
+                labelEl.textContent = aviationName + " Bags";
+            } else if (activeMode === 'cargo') {
+                wrapper.classList.add('type-cargo');
+                labelEl.textContent = aviationName + " Cargo WT";
+            } else if (activeMode === 'mail') {
+                wrapper.classList.add('type-mail');
+                labelEl.textContent = aviationName + " Mail WT";
+            }
         }
         calculate();
     }
 
-    function resetField(inputId, checkId, labelId) {
-        document.getElementById(checkId).checked = false;
-        toggleCatering(inputId, checkId, labelId);
+    function getActiveMode(inputId) {
+        if (document.getElementById(`chk-${inputId}-catering`).checked) return 'catering';
+        if (document.getElementById(`chk-${inputId}-cargo`).checked) return 'cargo';
+        if (document.getElementById(`chk-${inputId}-mail`).checked) return 'mail';
+        return 'bags';
+    }
+
+    function resetField(inputId) {
+        chkSelect(inputId, 'bags');
     }
 
     function getVal(id) {
@@ -410,51 +555,85 @@
         }
     }
 
-    function computeFlexibleHold(positions, targetValue) {
-        let baggageWeightSum = 0;
+    function computeFlexibleHold(positions, targetValue, isBulkHold = false) {
+        let physicalCargoWeightSum = 0;
         let cateringActiveIDs = [];
 
         positions.forEach(id => {
-            const suffix = id.split('-')[1];
-            const chk = document.getElementById('chk-' + suffix);
-            if (chk && chk.checked) {
+            const mode = getActiveMode(id);
+            const val = document.getElementById(id).value;
+            let computedWeight = 0;
+
+            if (mode === 'catering') {
                 cateringActiveIDs.push(id);
             } else {
-                const val = document.getElementById(id).value;
                 if (val !== "" && !isNaN(val) && parseFloat(val) > 0) {
-                    baggageWeightSum += (parseFloat(val) * 13) + 65;
+                    const numericVal = parseFloat(val);
+                    if (mode === 'bags') {
+                        computedWeight = isBulkHold ? (numericVal * 13) : ((numericVal * 13) + 65);
+                    } else if (mode === 'cargo' || mode === 'mail') {
+                        computedWeight = numericVal;
+                    }
                 }
+                physicalCargoWeightSum += computedWeight;
+                document.getElementById('calc-' + id).textContent = computedWeight + " kg";
             }
         });
 
-        let totalHoldCateringWeight = 0;
         if (cateringActiveIDs.length > 0) {
-            if (targetValue > 0) {
-                totalHoldCateringWeight = targetValue - baggageWeightSum;
-                if (totalHoldCateringWeight < 0) totalHoldCateringWeight = 0;
-                
-                const splitWeight = Math.floor(totalHoldCateringWeight / cateringActiveIDs.length);
-                cateringActiveIDs.forEach(id => {
-                    document.getElementById(id).value = splitWeight + " kg";
-                });
-            } else {
-                cateringActiveIDs.forEach(id => {
-                    document.getElementById(id).value = "0 kg";
-                });
-            }
+            let totalHoldCateringWeight = targetValue - physicalCargoWeightSum;
+            if (totalHoldCateringWeight < 0 || targetValue === 0) totalHoldCateringWeight = 0;
+            
+            const splitWeight = Math.floor(totalHoldCateringWeight / cateringActiveIDs.length);
+            cateringActiveIDs.forEach(id => {
+                document.getElementById(id).value = splitWeight + " kg";
+                document.getElementById('calc-' + id).textContent = splitWeight + " kg";
+            });
+            return physicalCargoWeightSum + totalHoldCateringWeight;
         }
 
-        return baggageWeightSum + totalHoldCateringWeight;
+        return physicalCargoWeightSum;
     }
 
     function calculate() {
         // --- HOLD 1 ---
-        const h1Positions = ['h1-11l', 'h1-11r', 'h1-12l', 'h1-12r', 'h1-13l', 'h1-13r'];
+        let h1Positions = ['h1-11l', 'h1-11p', 'h1-11r', 'h1-12l', 'h1-12p', 'h1-12r'];
+        if (currentAircraft === 'A390') h1Positions.push('h1-13l', 'h1-13r');
         const h1Total = computeFlexibleHold(h1Positions, getVal('target-h1'));
         updateStatus('status-h1', h1Total, getVal('target-h1'));
 
         // --- HOLD 2 ---
-        const h2Total = getVal('h2-23p') + getVal('h2-24p');
+        const h2Positions = [
+            'h2-21l', 'h2-21p', 'h2-21r', 'h2-22l', 'h2-22p', 'h2-22r',
+            'h2-23l', 'h2-23p', 'h2-23r', 'h2-24l', 'h2-24p', 'h2-24r',
+            'h2-25l', 'h2-25r', 'h2-26l', 'h2-26r'
+        ];
+        const h2Total = computeFlexibleHold(h2Positions, getVal('target-h2'));
         updateStatus('status-h2', h2Total, getVal('target-h2'));
 
-        // ---
+        // --- HOLD 3 ---
+        let h3Positions = [
+            'h3-32l', 'h3-32p', 'h3-32r', 'h3-33l', 'h3-33p', 'h3-33r', 'h3-34l', 'h3-34r'
+        ];
+        if (currentAircraft === 'A333') h3Positions.push('h3-31l', 'h3-31p', 'h3-31r');
+        
+        const targetH3 = currentAircraft === 'A333' ? getVal('target-h3') : getVal('target-h3-alt');
+        const h3Total = computeFlexibleHold(h3Positions, targetH3);
+        updateStatus('status-h3', h3Total, targetH3);
+
+        // --- HOLD 4 ---
+        const h4Positions = [
+            'h4-41l', 'h4-41p', 'h4-41r', 'h4-42l', 'h4-42p', 'h4-42r', 'h4-43l', 'h4-43r'
+        ];
+        const h4Total = computeFlexibleHold(h4Positions, getVal('target-h4'));
+        updateStatus('status-h4', h4Total, getVal('target-h4'));
+
+        // --- HOLD 5 ---
+        const h5Total = computeFlexibleHold(['h5-bulk'], getVal('target-h5'), true);
+        updateStatus('status-h5', h5Total, getVal('target-h5'));
+    }
+
+    switchAircraft('A390');
+</script>
+</body>
+</html>
